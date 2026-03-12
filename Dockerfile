@@ -10,7 +10,7 @@ RUN npm run build-only
 FROM ghcr.io/astral-sh/uv:python3.12-bookworm-slim
 WORKDIR /app
 
-COPY pyproject.toml uv.lock ./
+COPY pyproject.toml uv.lock README.md ./
 COPY src/ ./src/
 COPY --from=frontend /app/frontend/dist ./frontend/dist
 

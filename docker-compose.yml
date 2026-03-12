@@ -4,9 +4,10 @@ services:
     ports:
       - "8000:8000"
     volumes:
-      - summoner_data:/app/data
+      - .:/app/
     environment:
       - APP_ROOT=/app
+      - DB_NAME=sw_database.db
 
 volumes:
   summoner_data:

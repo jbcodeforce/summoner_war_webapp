@@ -1,21 +1,45 @@
+import logging
+import time
 from contextlib import asynccontextmanager
 from pathlib import Path
 
-from fastapi import FastAPI
-from fastapi.responses import FileResponse
+from fastapi import FastAPI, HTTPException
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 
-from summoner_war_webapp.database import create_db_and_tables
-from summoner_war_webapp.routers import factions, games, matrix
+from sw_backend.database import create_db_and_tables
+from sw_backend.logging_config import setup_logging
+from sw_backend.routers import factions, games, matrix
+
+setup_logging()
+log = logging.getLogger("summoner_wars_webapp")
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    log.info("Starting up: creating DB and tables")
     create_db_and_tables()
     yield
+    log.info("Shutting down")
 
 
 app = FastAPI(title="Summoner Wars Tracker", lifespan=lifespan)
+
+
+@app.middleware("http")
+async def log_requests(request, call_next):
+    start = time.perf_counter()
+    response = await call_next(request)
+    duration_ms = (time.perf_counter() - start) * 1000
+    log.info(
+        "%s %s -> %s %.1fms",
+        request.method,
+        request.url.path,
+        response.status_code,
+        duration_ms,
+    )
+    return response
+
 
 # API routes under /api
 app.include_router(factions.router, prefix="/api")
@@ -23,8 +47,19 @@ app.include_router(games.router, prefix="/api")
 app.include_router(matrix.router, prefix="/api")
 
 # Resolve path to frontend dist (when built)
-from summoner_war_webapp.database import ROOT
+from sw_backend.database import ROOT
 DIST_DIR = ROOT / "frontend" / "dist"
+
+
+@app.exception_handler(Exception)
+def log_unhandled_exception(request, exc: Exception):
+    if isinstance(exc, HTTPException):
+        raise exc
+    log.exception("Unhandled exception: %s %s", request.method, request.url.path)
+    return JSONResponse(
+        status_code=500,
+        content={"detail": "Internal server error"},
+    )
 
 
 @app.get("/api/health")

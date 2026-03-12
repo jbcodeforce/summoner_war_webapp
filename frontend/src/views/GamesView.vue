@@ -20,7 +20,9 @@ const form = ref({
 
 const factionNames = computed(() => {
   const m: Record<number, string> = {}
-  factions.value.forEach((f) => { m[f.id] = f.name })
+  factions.value.forEach((f) => {
+    m[f.id] = `${f.summoner_name} (${f.name})`
+  })
   return m
 })
 
@@ -129,24 +131,31 @@ function formatDate(s: string) {
     <!-- Compact add/edit form (collapsible) -->
     <section v-if="formOpen" class="form-card">
       <h2 class="form-card-title">{{ editingId ? 'Edit game' : 'Add game' }}</h2>
-      <form @submit.prevent="submit" class="form-inline">
-        <select v-model.number="form.faction_a_id" required title="Faction A">
-          <option v-for="f in factions" :key="f.id" :value="f.id">{{ f.name }}</option>
-        </select>
-        <span class="vs">vs</span>
-        <select v-model.number="form.faction_b_id" required title="Faction B">
-          <option v-for="f in factions" :key="f.id" :value="f.id">{{ f.name }}</option>
-        </select>
-        <select v-model="form.winner" title="Winner">
-          <option value="a">A wins</option>
-          <option value="b">B wins</option>
-        </select>
-        <input v-model="form.played_at" type="datetime-local" required class="date-input" />
-        <input v-model="form.player_a_name" type="text" placeholder="Player A" class="player-input" />
-        <input v-model="form.player_b_name" type="text" placeholder="Player B" class="player-input" />
-        <div class="form-actions">
-          <button type="submit" class="btn-primary">{{ editingId ? 'Update' : 'Add' }}</button>
-          <button type="button" @click="formOpen = false">Cancel</button>
+      <form @submit.prevent="submit" class="form-stacked">
+        <div class="form-row">
+          <label class="form-label">Date</label>
+          <input v-model="form.played_at" type="datetime-local" required class="date-input" />
+        </div>
+        <div class="form-row">
+          <input v-model="form.player_a_name" type="text" placeholder="Player A" class="player-input" />
+          <input v-model="form.player_b_name" type="text" placeholder="Player B" class="player-input" />
+        </div>
+        <div class="form-row">
+          <select v-model.number="form.faction_a_id" required title="Faction A">
+            <option v-for="f in factions" :key="f.id" :value="f.id">{{ f.summoner_name }} ({{ f.name }})</option>
+          </select>
+          <span class="vs">vs</span>
+          <select v-model.number="form.faction_b_id" required title="Faction B">
+            <option v-for="f in factions" :key="f.id" :value="f.id">{{ f.summoner_name }} ({{ f.name }})</option>
+          </select>
+          <select v-model="form.winner" title="Winner">
+            <option value="a">A wins</option>
+            <option value="b">B wins</option>
+          </select>
+          <div class="form-actions">
+            <button type="submit" class="btn-primary">{{ editingId ? 'Update' : 'Add' }}</button>
+            <button type="button" @click="formOpen = false">Cancel</button>
+          </div>
         </div>
       </form>
     </section>
@@ -260,14 +269,26 @@ function formatDate(s: string) {
   margin: 0 0 0.75rem 0;
 }
 
-.form-inline {
+.form-stacked {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.form-row {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   gap: 0.5rem;
 }
 
-.form-inline select,
+.form-label {
+  font-size: 0.9rem;
+  color: var(--color-text);
+  margin-right: 0.25rem;
+}
+
+.form-stacked select,
 .date-input,
 .player-input {
   padding: 0.4rem 0.6rem;

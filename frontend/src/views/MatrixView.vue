@@ -70,12 +70,22 @@ function refresh() {
         <thead>
           <tr>
             <th class="corner"></th>
-            <th v-for="f in factions" :key="f.id" class="col-header">{{ f.name }}</th>
+            <th v-for="f in factions" :key="f.id" class="col-header">
+              <span class="header-label">
+                <span class="header-main">{{ f.summoner_name }}</span>
+                <span class="header-faction">{{ f.name }}</span>
+              </span>
+            </th>
           </tr>
         </thead>
         <tbody>
           <tr v-for="rowF in factions" :key="rowF.id">
-            <th class="row-header">{{ rowF.name }}</th>
+            <th class="row-header">
+              <span class="header-label">
+                <span class="header-main">{{ rowF.summoner_name }}</span>
+                <span class="header-faction">{{ rowF.name }}</span>
+              </span>
+            </th>
             <td
               v-for="colF in factions"
               :key="colF.id"
@@ -161,7 +171,23 @@ function refresh() {
 
 .corner {
   background: var(--color-background-mute);
-  min-width: 6rem;
+  min-width: 8rem;
+}
+
+.header-label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.header-main {
+  font-weight: 600;
+}
+
+.header-faction {
+  font-size: 0.75em;
+  opacity: 0.85;
+  font-weight: normal;
 }
 
 .row-header {
@@ -176,7 +202,8 @@ function refresh() {
   font-weight: 600;
   background: var(--color-background-mute);
   writing-mode: horizontal-tb;
-  max-width: 5rem;
+  min-width: 4rem;
+  max-width: 7rem;
   overflow: hidden;
   text-overflow: ellipsis;
 }
